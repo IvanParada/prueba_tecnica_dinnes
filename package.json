@@ -1,0 +1,26 @@
+{
+  "name": "prueba-tecnica-dinnes",
+  "version": "1.0.0",
+  "description": "Prueba técnica para Dinnes",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "start:backend": "npm run start:dev --workspace=backend",
+    "start:frontend": "npm run start --workspace=frontend",
+    "start:both": "npm run start:backend & npm run start:frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:all": "npm run build:backend && npm run build:frontend",
+    "lint:backend": "npm run lint --workspace=backend",
+    "test:backend": "npm run test --workspace=backend",
+    "test:frontend": "npm run test --workspace=frontend",
+    "format:all": "prettier --write \"backend/src/**/*.ts\" \"frontend/src/**/*.ts\""
+  },
+  "devDependencies": {
+    "prettier": "^3.8.1"
+  }
+}
