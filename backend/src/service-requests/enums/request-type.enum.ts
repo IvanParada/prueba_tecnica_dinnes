@@ -1,6 +1,6 @@
 export enum RequestType {
   SOPORTE_TECNICO = 'Soporte técnico',
-  COMPLAINT = 'Reclamo',
-  SALES_INQUIRY = 'Consulta de ventas',
-  INFORMATION_REQUEST = 'Solicitud de información',
+  RECLAMO = 'Reclamo',
+  CONSULTA_VENTAS = 'Consulta de ventas',
+  SOLICITUD_INFORMACION = 'Solicitud de información',
 }

@@ -1,6 +1,6 @@
 export enum RequestStatus {
   PENDIENTE = 'Pendiente',
-  EN_PROGRESO = 'En progreso',
-  COMPLETADO = 'Completado',
-  RECHAZADO = 'Rechazado',
+  EN_PROCESO = 'En progreso',
+  FINALIZADA = 'Finalizada',
+  RECHAZADA = 'Rechazada',
 }
