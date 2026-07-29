@@ -13,6 +13,7 @@ services:
       POSTGRES_PASSWORD: dinnes_pass
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
 
 volumes:
   pgdata:
