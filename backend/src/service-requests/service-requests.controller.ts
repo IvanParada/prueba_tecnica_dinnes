@@ -16,7 +16,9 @@ import { CreateServiceRequestDto } from './dto/create-service-request.dto';
 import { UpdateServiceRequestDto } from './dto/update-service-request.dto';
 import { ServiceRequestsService } from './service-requests.service';
 import { FindServiceRequestsQueryDto } from './dto/find-service-requests-query.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Solicitudes')
 @Controller('solicitudes')
 export class ServiceRequestsController {
     constructor(
