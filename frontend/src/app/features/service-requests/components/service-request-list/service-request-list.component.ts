@@ -1,13 +1,14 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, output, signal } from '@angular/core';
 import { PaginationMeta, ServiceRequest } from '../../interfaces/service-request.interface';
 import { ServiceRequestsService } from '../../services/service-request.service';
-import { finalize } from 'rxjs';
+import { finalize, Observable } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RequestStatus } from '../../enums/request-status.enum';
+import ServiceRequestFormModalComponent from '../service-request-form-modal/service-request-form-modal.component';
 
 @Component({
   selector: 'app-service-request-list',
-  imports: [],
+  imports: [ServiceRequestFormModalComponent],
   templateUrl: './service-request-list.component.html',
 })
 export default class ServiceRequestList implements OnInit {
@@ -26,6 +27,18 @@ export default class ServiceRequestList implements OnInit {
   readonly pageSize = signal(8);
 
   readonly requestStatuses = Object.values(RequestStatus);
+
+  readonly isFormModalOpen = signal(false);
+  readonly selectedRequest = signal<ServiceRequest | null>(null);
+
+  readonly requestsChanged = output<void>();
+
+  readonly processingRequestId = signal<number | null>(null);
+  readonly requestStatus = RequestStatus;
+
+  readonly actionErrorMessage = signal<string | null>(null);
+
+  readonly finalStatus = RequestStatus.FINALIZADA;
 
   readonly canGoPrevious = computed(
     () => this.currentPage() > 1,
@@ -148,5 +161,80 @@ export default class ServiceRequestList implements OnInit {
     this.loadRequests();
   }
 
+  openCreateModal(): void {
+    this.selectedRequest.set(null);
+    this.isFormModalOpen.set(true);
+  }
 
+  openEditModal(request: ServiceRequest): void {
+    this.selectedRequest.set(request);
+    this.isFormModalOpen.set(true);
+  }
+
+  closeFormModal(): void {
+    this.isFormModalOpen.set(false);
+    this.selectedRequest.set(null);
+  }
+
+  onRequestSaved(): void {
+    this.closeFormModal();
+    this.currentPage.set(1);
+    this.loadRequests();
+    this.requestsChanged.emit();
+  }
+
+  finalizeRequest(request: ServiceRequest): void {
+    if (
+      request.status === RequestStatus.FINALIZADA ||
+      !confirm(`¿Finalizar la solicitud ${request.number}?`)
+    ) {
+      return;
+    }
+
+    this.executeAction(
+      request.id,
+      this.serviceRequestsService.finalizeRequest(request.id),
+    );
+  }
+
+  deleteRequest(request: ServiceRequest): void {
+    const confirmed = confirm(
+      `¿Eliminar la solicitud ${request.number}? Esta acción no se puede deshacer.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.executeAction(
+      request.id,
+      this.serviceRequestsService.deleteRequest(request.id),
+    );
+  }
+
+  private executeAction(
+    requestId: number,
+    action$: Observable<unknown>,
+  ): void {
+    this.processingRequestId.set(requestId);
+    this.errorMessage.set(null);
+
+    action$
+      .pipe(
+        finalize(() => {
+          this.processingRequestId.set(null);
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.loadRequests();
+          this.requestsChanged.emit();
+        },
+        error: () => {
+          this.errorMessage.set(
+            'No se pudo completar la acción.',
+          );
+        },
+      });
+  }
 }

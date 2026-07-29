@@ -3,8 +3,8 @@ import { DashboardService } from './services/dashboard.service';
 import { DashboardStats } from './interfaces/dashboard.interface';
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
+import ServiceRequestList from '../service-requests/components/service-request-list/service-request-list.component';
 
-import ServiceRequestList from '../service-requests/pages/service-request-list/service-request-list.component';
 
 @Component({
   selector: 'app-dashboard',

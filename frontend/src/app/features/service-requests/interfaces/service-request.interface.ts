@@ -39,3 +39,14 @@ export interface ServiceRequestsQuery {
   page?: number;
   limit?: number;
 }
+
+export interface SaveServiceRequestRequest {
+  number: string;
+  date: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  requestType: RequestType;
+  description: string;
+  status: RequestStatus;
+}

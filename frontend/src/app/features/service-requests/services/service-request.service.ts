@@ -4,9 +4,12 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import {
+  SaveServiceRequestRequest,
+  ServiceRequest,
   ServiceRequestsQuery,
   ServiceRequestsResponse,
 } from '../interfaces/service-request.interface';
+import { RequestStatus } from '../enums/request-status.enum';
 
 @Injectable({
   providedIn: 'root',
@@ -43,6 +46,38 @@ export class ServiceRequestsService {
     return this.http.get<ServiceRequestsResponse>(
       this.apiUrl,
       { params },
+    );
+  }
+
+  create(
+    payload: SaveServiceRequestRequest,
+  ): Observable<ServiceRequest> {
+    return this.http.post<ServiceRequest>(
+      this.apiUrl,
+      payload,
+    );
+  }
+
+  update(
+    id: number,
+    payload: SaveServiceRequestRequest,
+  ): Observable<ServiceRequest> {
+    return this.http.put<ServiceRequest>(
+      `${this.apiUrl}/${id}`,
+      payload,
+    );
+  }
+
+  finalizeRequest(id: number): Observable<ServiceRequest> {
+    return this.http.put<ServiceRequest>(
+      `${this.apiUrl}/${id}`,
+      { status: RequestStatus.FINALIZADA },
+    );
+  }
+
+  deleteRequest(id: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/${id}`,
     );
   }
 }
