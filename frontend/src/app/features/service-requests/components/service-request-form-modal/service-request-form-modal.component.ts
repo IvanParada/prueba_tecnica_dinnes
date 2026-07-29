@@ -22,6 +22,7 @@ import {
   ServiceRequest,
 } from '../../interfaces/service-request.interface';
 import { ServiceRequestsService } from '../../services/service-request.service';
+import { CustomerLookupService } from '../../services/customer-lookup.service';
 
 @Component({
   selector: 'app-service-request-form-modal',
@@ -35,6 +36,7 @@ export default class ServiceRequestFormModalComponent {
   private readonly serviceRequestsService = inject(
     ServiceRequestsService,
   );
+  private readonly customerLookupService = inject(CustomerLookupService);
 
   readonly request = input<ServiceRequest | null>(null);
 
@@ -50,6 +52,10 @@ export default class ServiceRequestFormModalComponent {
 
   readonly requestTypes = Object.values(RequestType);
   readonly requestStatuses = Object.values(RequestStatus);
+
+  readonly isLookingUpCustomer = signal(false);
+  readonly customerLookupMessage = signal<string | null>(null);
+  readonly customerLookupHasError = signal(false);
 
   readonly requestForm =
     this.formBuilder.nonNullable.group({
@@ -218,5 +224,74 @@ export default class ServiceRequestFormModalComponent {
     )
       .toISOString()
       .slice(0, 10);
+  }
+  
+  lookupCustomer(): void {
+    const emailControl =
+      this.requestForm.controls.customerEmail;
+
+    emailControl.markAsTouched();
+
+    if (emailControl.invalid) {
+      this.customerLookupHasError.set(true);
+      this.customerLookupMessage.set(
+        'Ingrese un correo electrónico válido.',
+      );
+      return;
+    }
+
+    this.isLookingUpCustomer.set(true);
+    this.customerLookupMessage.set(null);
+    this.customerLookupHasError.set(false);
+
+    this.customerLookupService
+      .lookupByEmail(emailControl.value)
+      .pipe(
+        finalize(() => {
+          this.isLookingUpCustomer.set(false);
+        }),
+      )
+      .subscribe({
+        next: (customer) => {
+          this.requestForm.patchValue({
+            customerName: customer.name,
+            customerEmail: customer.email,
+            customerPhone: customer.phone,
+          });
+
+          this.customerLookupMessage.set(
+            'Cliente encontrado. Sus datos fueron completados.',
+          );
+        },
+
+        error: (error: HttpErrorResponse) => {
+          this.customerLookupHasError.set(true);
+
+          if (error.status === 404) {
+            this.customerLookupMessage.set(
+              'Cliente no encontrado. Puede ingresar sus datos manualmente.',
+            );
+            return;
+          }
+
+          if (error.status === 408) {
+            this.customerLookupMessage.set(
+              'La consulta excedió el tiempo máximo.',
+            );
+            return;
+          }
+
+          if (error.status === 502) {
+            this.customerLookupMessage.set(
+              'El servicio externo de clientes no está disponible.',
+            );
+            return;
+          }
+
+          this.customerLookupMessage.set(
+            'No se pudo consultar la información del cliente.',
+          );
+        },
+      });
   }
 }

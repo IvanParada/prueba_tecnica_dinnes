@@ -1,36 +1,25 @@
-<div
-  class="modal modal-open"
-  role="dialog"
-  aria-modal="true"
->
+<div class="modal modal-open" role="dialog" aria-modal="true">
   <div class="modal-box max-w-3xl">
     <h3 class="mb-4 text-xl font-bold">
       {{ isEditing() ? 'Editar solicitud' : 'Crear solicitud' }}
     </h3>
 
-    <form
-      [formGroup]="requestForm"
-      (ngSubmit)="onSubmit()"
-    >
+    <form [formGroup]="requestForm" (ngSubmit)="onSubmit()">
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
         <label class="form-control">
           <span class="label-text mb-1">
             Número
           </span>
 
-          <input
-            type="text"
-            class="input input-bordered w-full"
-            formControlName="number"
-          />
+          <input type="text" class="input input-bordered w-full" formControlName="number" />
 
           @if (
-            requestForm.controls.number.touched &&
-            requestForm.controls.number.invalid
+          requestForm.controls.number.touched &&
+          requestForm.controls.number.invalid
           ) {
-            <span class="mt-1 text-sm text-error">
-              El número es obligatorio.
-            </span>
+          <span class="mt-1 text-sm text-error">
+            El número es obligatorio.
+          </span>
           }
         </label>
 
@@ -39,14 +28,68 @@
             Fecha
           </span>
 
-          <input
-            type="date"
-            class="input input-bordered w-full"
-            formControlName="date"
-          />
+          <input type="date" class="input input-bordered w-full" formControlName="date" />
         </label>
 
         <label class="form-control">
+          <span class="label-text mb-1">
+            Cliente
+          </span>
+
+          <input type="text" class="input input-bordered w-full" formControlName="customerName" />
+
+          @if (
+          requestForm.controls.customerName.touched &&
+          requestForm.controls.customerName.invalid
+          ) {
+          <span class="mt-1 text-sm text-error">
+            El nombre del cliente es obligatorio.
+          </span>
+          }
+        </label>
+
+        <div class="form-control">
+          <span class="label-text mb-1">
+            Correo electrónico
+          </span>
+
+          <div class="flex gap-2">
+            <input type="email" class="input input-bordered w-full" formControlName="customerEmail" />
+
+            <button type="button" class="btn btn-outline" [disabled]="isLookingUpCustomer()" (click)="lookupCustomer()">
+              @if (isLookingUpCustomer()) {
+              <span class="loading loading-spinner loading-sm"></span>
+              }
+
+              Buscar
+            </button>
+          </div>
+
+          @if (
+          requestForm.controls.customerEmail.touched &&
+          requestForm.controls.customerEmail.invalid
+          ) {
+          <span class="mt-1 text-sm text-error">
+            Ingrese un correo válido.
+          </span>
+          }
+
+          @if (customerLookupMessage()) {
+          <span class="mt-1 text-sm" [class.text-error]="customerLookupHasError()"
+            [class.text-success]="!customerLookupHasError()">
+            {{ customerLookupMessage() }}
+          </span>
+          }
+        </div>
+
+        <label class="form-control">
+          <span class="label-text mb-1">
+            Teléfono
+          </span>
+
+          <input type="text" class="input input-bordered w-full" formControlName="customerPhone" />
+        </label>
+        <!-- <label class="form-control">
           <span class="label-text mb-1">
             Cliente
           </span>
@@ -98,21 +141,18 @@
             class="input input-bordered w-full"
             formControlName="customerPhone"
           />
-        </label>
+        </label> -->
 
         <label class="form-control">
           <span class="label-text mb-1">
             Tipo de solicitud
           </span>
 
-          <select
-            class="select select-bordered w-full"
-            formControlName="requestType"
-          >
+          <select class="select select-bordered w-full" formControlName="requestType">
             @for (type of requestTypes; track type) {
-              <option [value]="type">
-                {{ type }}
-              </option>
+            <option [value]="type">
+              {{ type }}
+            </option>
             }
           </select>
         </label>
@@ -122,14 +162,11 @@
             Estado
           </span>
 
-          <select
-            class="select select-bordered w-full"
-            formControlName="status"
-          >
+          <select class="select select-bordered w-full" formControlName="status">
             @for (status of requestStatuses; track status) {
-              <option [value]="status">
-                {{ status }}
-              </option>
+            <option [value]="status">
+              {{ status }}
+            </option>
             }
           </select>
         </label>
@@ -140,44 +177,32 @@
           Descripción
         </span>
 
-        <textarea
-          class="textarea textarea-bordered min-h-28 w-full"
-          formControlName="description"
-        ></textarea>
+        <textarea class="textarea textarea-bordered min-h-28 w-full" formControlName="description"></textarea>
 
         @if (
-          requestForm.controls.description.touched &&
-          requestForm.controls.description.invalid
+        requestForm.controls.description.touched &&
+        requestForm.controls.description.invalid
         ) {
-          <span class="mt-1 text-sm text-error">
-            La descripción debe contener al menos 5 caracteres.
-          </span>
+        <span class="mt-1 text-sm text-error">
+          La descripción debe contener al menos 5 caracteres.
+        </span>
         }
       </label>
 
       @if (errorMessage()) {
-        <div class="alert alert-error mt-4">
-          <span>{{ errorMessage() }}</span>
-        </div>
+      <div class="alert alert-error mt-4">
+        <span>{{ errorMessage() }}</span>
+      </div>
       }
 
       <div class="modal-action">
-        <button
-          type="button"
-          class="btn"
-          [disabled]="isLoading()"
-          (click)="closeModal()"
-        >
+        <button type="button" class="btn" [disabled]="isLoading()" (click)="closeModal()">
           Cancelar
         </button>
 
-        <button
-          type="submit"
-          class="btn btn-primary"
-          [disabled]="isLoading()"
-        >
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading()">
           @if (isLoading()) {
-            <span class="loading loading-spinner loading-sm"></span>
+          <span class="loading loading-spinner loading-sm"></span>
           }
 
           {{ isEditing() ? 'Guardar cambios' : 'Crear solicitud' }}
@@ -186,10 +211,5 @@
     </form>
   </div>
 
-  <button
-    type="button"
-    class="modal-backdrop"
-    aria-label="Cerrar modal"
-    (click)="closeModal()"
-  ></button>
+  <button type="button" class="modal-backdrop" aria-label="Cerrar modal" (click)="closeModal()"></button>
 </div>

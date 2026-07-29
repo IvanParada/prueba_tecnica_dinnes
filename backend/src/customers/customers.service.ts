@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { BadGatewayException, HttpException, Injectable, RequestTimeoutException } from '@nestjs/common';
+import { BadGatewayException, HttpException, Injectable, NotFoundException, RequestTimeoutException } from '@nestjs/common';
 import { CustomerLookup } from './interfaces/customer-lookup.interface';
 import { isAxiosError } from 'axios';
 import { firstValueFrom } from 'rxjs';
@@ -28,7 +28,9 @@ export class CustomersService {
             const customer = data.find(c => c.email.trim().toLowerCase() === normalizedEmail);
 
             if (!customer) {
-                throw new Error(`Customer with email ${email} not found`);
+                throw new NotFoundException(
+                    'No existen datos para el correo ingresado',
+                );
             }
             return {
                 name: customer.name,
