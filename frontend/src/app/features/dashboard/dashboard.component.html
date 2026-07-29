@@ -1,1 +1,66 @@
-<h1>soy el dashboard</h1>
+<section>
+
+    @if (isLoading()) {
+    <div class="flex justify-center py-10">
+        <span class="loading loading-spinner loading-lg"></span>
+    </div>
+    } @else if (errorMessage()) {
+    <div class="alert alert-error">
+        <span>{{ errorMessage() }}</span>
+
+        <button type="button" class="btn btn-sm" (click)="loadStats()">
+            Reintentar
+        </button>
+    </div>
+    } @else if (stats(); as dashboardStats) {
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div class="stats shadow">
+            <div class="stat">
+                <div class="stat-title">
+                    Solicitudes totales
+                </div>
+
+                <div class="stat-value">
+                    {{ dashboardStats.total }}
+                </div>
+            </div>
+        </div>
+
+        <div class="stats shadow">
+            <div class="stat">
+                <div class="stat-title">
+                    Solicitudes pendientes
+                </div>
+
+                <div class="stat-value">
+                    {{ dashboardStats.pending }}
+                </div>
+            </div>
+        </div>
+
+        <div class="stats shadow">
+            <div class="stat">
+                <div class="stat-title">
+                    Solicitudes en proceso
+                </div>
+
+                <div class="stat-value">
+                    {{ dashboardStats.inProgress }}
+                </div>
+            </div>
+        </div>
+
+        <div class="stats shadow">
+            <div class="stat">
+                <div class="stat-title">
+                    Solicitudes finalizadas
+                </div>
+
+                <div class="stat-value">
+                    {{ dashboardStats.completed }}
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+</section>
