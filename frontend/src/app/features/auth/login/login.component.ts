@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { LoginRequest } from '../../../core/intefaces/auth.interface';
+import { LoginRequest } from '../../../core/interfaces/auth.interface';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
