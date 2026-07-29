@@ -1,0 +1,138 @@
+<section class="px-5">
+
+    <form class="mb-4 flex flex-wrap gap-3" (submit)="$event.preventDefault(); applySearch()">
+        <input type="search" class="input input-bordered" placeholder="Buscar solicitudes" [value]="search()"
+            (input)="onSearchInput($event)" />
+
+        <select class="select select-bordered" [value]="selectedStatus()" (change)="onStatusChange($event)">
+            <option value="">
+                Todos los estados
+            </option>
+
+            @for (status of requestStatuses; track status) {
+            <option [value]="status">
+                {{ status }}
+            </option>
+            }
+        </select>
+
+        <select class="select select-bordered" [value]="sortOrder()" (change)="onSortOrderChange($event)">
+            <option value="DESC">
+                Más recientes
+            </option>
+
+            <option value="ASC">
+                Más antiguas
+            </option>
+        </select>
+
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading()">
+            Buscar
+        </button>
+
+        <button type="button" class="btn btn-ghost" [disabled]="isLoading()" (click)="clearFilters()">
+            Limpiar
+        </button>
+    </form>
+
+    @if (isLoading()) {
+    <div class="flex justify-center py-8">
+        <span class="loading loading-spinner loading-md"></span>
+    </div>
+    } @else if (errorMessage()) {
+    <div class="alert alert-error">
+        <span>{{ errorMessage() }}</span>
+
+        <button type="button" class="btn btn-sm" (click)="loadRequests()">
+            Reintentar
+        </button>
+    </div>
+    } @else if (requests().length === 0) {
+    <div class="alert">
+        <span>No existen solicitudes registradas.</span>
+    </div>
+    } @else {
+    <div class="overflow-x-auto rounded-box bg-base-100 shadow">
+        <table class="table table-zebra">
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Contacto</th>
+                    <th>Tipo</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @for (request of requests(); track request.id) {
+                <tr>
+                    <td class="font-medium">
+                        {{ request.number }}
+                    </td>
+
+                    <td>
+                        {{ request.date }}
+                    </td>
+
+                    <td>
+                        {{ request.customer.name }}
+                    </td>
+
+                    <td>
+                        <div>{{ request.customer.email }}</div>
+                        <div class="text-sm opacity-60">
+                            {{ request.customer.phone }}
+                        </div>
+                    </td>
+
+                    <td>
+                        {{ request.requestType }}
+                    </td>
+
+                    <td class="max-w-xs">
+                        <p class="truncate">
+                            {{ request.description }}
+                        </p>
+                    </td>
+
+                    <td>
+                        <span class="badge badge-outline">
+                            {{ request.status }}
+                        </span>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    }
+
+    @if (pagination(); as paginationMeta) {
+    <div class="my-4 flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm opacity-70">
+            Mostrando {{ requests().length }} de
+            {{ paginationMeta.total }} solicitudes
+        </p>
+
+        <div class="join">
+            <button type="button" class="btn join-item btn-sm" [disabled]="!canGoPrevious() || isLoading()"
+                (click)="previousPage()">
+                Anterior
+            </button>
+
+            <span class="btn join-item btn-sm pointer-events-none">
+                Página {{ paginationMeta.page }} de
+                {{ paginationMeta.totalPages || 1 }}
+            </span>
+
+            <button type="button" class="btn join-item btn-sm" [disabled]="!canGoNext() || isLoading()"
+                (click)="nextPage()">
+                Siguiente
+            </button>
+        </div>
+    </div>
+    }
+</section>
