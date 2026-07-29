@@ -1,1 +1,61 @@
-<h1>soy el login</h1>
+<div class="card w-96 bg-base-100 shadow">
+    <div class="card-body">
+        <h1 class="text-center text-2xl font-bold">
+            Iniciar Sesión
+        </h1>
+
+        <form class="space-y-4" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div>
+                <input type="email" class="input input-bordered w-full" [class.input-error]="
+            loginForm.controls.email.invalid &&
+            loginForm.controls.email.touched
+          " formControlName="email" placeholder="Email" />
+
+                @if (
+                loginForm.controls.email.touched &&
+                loginForm.controls.email.invalid
+                ) {
+                <p class="mt-1 text-sm text-error">
+                    Ingrese un email válido.
+                </p>
+                }
+            </div>
+
+            <div>
+                <input type="password" class="input input-bordered w-full" [class.input-error]="
+            loginForm.controls.password.invalid &&
+            loginForm.controls.password.touched
+          " formControlName="password" placeholder="Password" />
+
+                @if (
+                loginForm.controls.password.touched &&
+                loginForm.controls.password.invalid
+                ) {
+                <p class="mt-1 text-sm text-error">
+                    La contraseña debe contener al menos 6 caracteres.
+                </p>
+                }
+            </div>
+
+            @if (errorMessage()) {
+            <div class="alert alert-error py-2">
+                <span>{{ errorMessage() }}</span>
+            </div>
+            }
+
+            <button type="submit" class="btn btn-primary w-full" [disabled]="loginForm.invalid || isLoading()">
+                @if (isLoading()) {
+                <span class="loading loading-spinner loading-sm"></span>
+                }
+
+                {{ isLoading() ? 'Iniciando sesión...' : 'Iniciar sesión' }}
+            </button>
+        </form>
+
+        <div class="mt-4 rounded-lg bg-base-200 p-3 text-center text-sm">
+            <p><strong>EMAIL:</strong> admin@dinnes.cl</p>
+            <p><strong>PASSWORD:</strong> admin123</p>
+        </div>
+    </div>
+    
+</div>

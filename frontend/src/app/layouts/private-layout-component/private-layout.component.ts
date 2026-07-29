@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-private-layout',
@@ -7,4 +8,10 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './private-layout.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PrivateLayoutComponent { }
+export class PrivateLayoutComponent {
+  private readonly authService = inject(AuthService);
+
+  logout(): void {
+    this.authService.logout();
+  }
+}
