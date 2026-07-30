@@ -117,12 +117,15 @@ Cada feature mantiene sus propios componentes, servicios, interfaces y enumeraci
 
 Para ejecutar el proyecto se necesita:
 
-- Node.js.
+- Node.js 24.15.0 o superior dentro de la versión 24.
 - npm.
-- Docker.
-- Docker Compose.
+- Docker Desktop.
 
-No es necesario instalar PostgreSQL directamente si se utiliza Docker Compose.
+> Se recomienda utilizar Node.js 24 LTS. El proyecto no es compatible con Node.js 20.
+
+Docker Desktop incluye Docker y Docker Compose, necesarios para levantar la base de datos PostgreSQL.
+
+No es necesario instalar PostgreSQL directamente, ya que la base de datos se ejecuta mediante Docker Compose.
 
 ## Instalación y ejecución
 
