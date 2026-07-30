@@ -11,14 +11,15 @@
             Número
           </span>
 
-          <input type="text" class="input input-bordered w-full" formControlName="number" />
+          <input type="text" class="input input-bordered w-full" formControlName="number" placeholder="SOL-000001" (input)="onNumberInput()"
+            maxlength="14" />
 
           @if (
           requestForm.controls.number.touched &&
           requestForm.controls.number.invalid
           ) {
           <span class="mt-1 text-sm text-error">
-            El número es obligatorio.
+            Ingrese un número después de SOL-
           </span>
           }
         </label>
@@ -36,7 +37,8 @@
             Cliente
           </span>
 
-          <input type="text" class="input input-bordered w-full" formControlName="customerName" />
+          <input type="text" class="input input-bordered w-full" formControlName="customerName"
+            placeholder="John Doe" />
 
           @if (
           requestForm.controls.customerName.touched &&
@@ -54,7 +56,8 @@
           </span>
 
           <div class="flex gap-2">
-            <input type="email" class="input input-bordered w-full" formControlName="customerEmail" />
+            <input type="email" class="input input-bordered w-full" formControlName="customerEmail"
+              placeholder="john.doe@example.com" />
 
             <button type="button" class="btn btn-outline" [disabled]="isLookingUpCustomer()" (click)="lookupCustomer()">
               @if (isLookingUpCustomer()) {
@@ -87,61 +90,9 @@
             Teléfono
           </span>
 
-          <input type="text" class="input input-bordered w-full" formControlName="customerPhone" />
+          <input type="text" class="input input-bordered w-full" formControlName="customerPhone"
+            placeholder="123-456-7890" />
         </label>
-        <!-- <label class="form-control">
-          <span class="label-text mb-1">
-            Cliente
-          </span>
-
-          <input
-            type="text"
-            class="input input-bordered w-full"
-            formControlName="customerName"
-          />
-
-          @if (
-            requestForm.controls.customerName.touched &&
-            requestForm.controls.customerName.invalid
-          ) {
-            <span class="mt-1 text-sm text-error">
-              El nombre del cliente es obligatorio.
-            </span>
-          }
-        </label>
-
-        <label class="form-control">
-          <span class="label-text mb-1">
-            Correo electrónico
-          </span>
-
-          <input
-            type="email"
-            class="input input-bordered w-full"
-            formControlName="customerEmail"
-          />
-
-          @if (
-            requestForm.controls.customerEmail.touched &&
-            requestForm.controls.customerEmail.invalid
-          ) {
-            <span class="mt-1 text-sm text-error">
-              Ingrese un correo válido.
-            </span>
-          }
-        </label>
-
-        <label class="form-control">
-          <span class="label-text mb-1">
-            Teléfono
-          </span>
-
-          <input
-            type="text"
-            class="input input-bordered w-full"
-            formControlName="customerPhone"
-          />
-        </label> -->
 
         <label class="form-control">
           <span class="label-text mb-1">

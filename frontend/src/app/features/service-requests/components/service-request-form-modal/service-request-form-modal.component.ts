@@ -60,10 +60,11 @@ export default class ServiceRequestFormModalComponent {
   readonly requestForm =
     this.formBuilder.nonNullable.group({
       number: [
-        '',
+        'SOL-',
         [
           Validators.required,
-          Validators.maxLength(30),
+          Validators.pattern(/^SOL-\d{1,10}$/i),
+          Validators.maxLength(14),
         ],
       ],
       date: [
@@ -132,7 +133,7 @@ export default class ServiceRequestFormModalComponent {
       }
 
       this.requestForm.reset({
-        number: '',
+        number: 'SOL-',
         date: this.getCurrentDate(),
         customerName: '',
         customerEmail: '',
@@ -225,7 +226,7 @@ export default class ServiceRequestFormModalComponent {
       .toISOString()
       .slice(0, 10);
   }
-  
+
   lookupCustomer(): void {
     const emailControl =
       this.requestForm.controls.customerEmail;
@@ -294,4 +295,15 @@ export default class ServiceRequestFormModalComponent {
         },
       });
   }
+  
+  onNumberInput(): void {
+  const control = this.requestForm.controls.number;
+  const digits = control.value
+    .replace(/\D/g, '')
+    .slice(0, 10);
+
+  control.setValue(`SOL-${digits}`, {
+    emitEvent: false,
+  });
+}
 }

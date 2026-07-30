@@ -39,7 +39,7 @@ export class ServiceRequestsService {
 
         const serviceRequest =
             this.serviceRequestRepository.create({
-                number: dto.number.trim(),
+                number: dto.number.trim().toUpperCase(),
                 date: dto.date,
                 requestType: dto.requestType,
                 description: dto.description.trim(),
@@ -262,7 +262,7 @@ export class ServiceRequestsService {
     private async ensureNumberIsAvailable(
         number: string,
     ): Promise<void> {
-        const normalizedNumber = number.trim();
+        const normalizedNumber = number.trim().toUpperCase();
 
         const exists = await this.serviceRequestRepository.exists({
             where: {

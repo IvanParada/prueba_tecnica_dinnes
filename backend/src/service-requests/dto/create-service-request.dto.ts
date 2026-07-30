@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -18,6 +19,9 @@ export class CreateServiceRequestDto {
     example: 'SOL-001',
     description: 'Número único de la solicitud',
     maxLength: 30,
+  })
+  @Matches(/^SOL-\d{1,10}$/i, {
+    message: 'El número debe tener el formato SOL-000001',
   })
   @IsString()
   @IsNotEmpty()
