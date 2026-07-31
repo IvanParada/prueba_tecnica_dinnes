@@ -8,6 +8,7 @@ import { ServiceRequestsService } from './service-requests.service';
 import { CreateServiceRequestDto } from './dto/create-service-request.dto';
 import { RequestStatus } from './enums/request-status.enum';
 import { RequestType } from './enums/request-type.enum';
+import { UpdateServiceRequestDto } from './dto/update-service-request.dto';
 
 describe('ServiceRequestsService', () => {
   let service: ServiceRequestsService;
@@ -18,6 +19,7 @@ describe('ServiceRequestsService', () => {
     create: jest.Mock;
     save: jest.Mock;
     delete: jest.Mock;
+    merge: jest.Mock;
   };
 
   let customerRepository: {
@@ -34,6 +36,7 @@ describe('ServiceRequestsService', () => {
       create: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
+      merge: jest.fn(),
     };
 
     customerRepository = {
@@ -296,6 +299,73 @@ describe('ServiceRequestsService', () => {
       );
 
       expect(serviceRequestRepository.delete).toHaveBeenCalledWith(999);
+    });
+  });
+
+  describe('update', () => {
+    it('should update a service request without changing the customer', async () => {
+      const status = Object.values(RequestStatus)[1];
+
+      const customer = {
+        id: 1,
+        name: 'Cliente de prueba',
+        email: 'cliente@ejemplo.cl',
+        phone: '912345678',
+      } as Customer;
+
+      const existingServiceRequest = {
+        id: 1,
+        number: 'REQ-001',
+        description: 'Descripción anterior',
+        status: Object.values(RequestStatus)[0],
+        customer,
+      } as ServiceRequest;
+
+      const updateDto: UpdateServiceRequestDto = {
+        description: ' Descripción actualizada ',
+        status,
+      };
+
+      const updatedServiceRequest = {
+        ...existingServiceRequest,
+        description: 'Descripción actualizada',
+        status,
+      };
+
+      serviceRequestRepository.findOne.mockResolvedValue(
+        existingServiceRequest,
+      );
+
+      serviceRequestRepository.merge.mockImplementation(
+        (entity: ServiceRequest, data: Partial<ServiceRequest>) => {
+          Object.assign(entity, data);
+          return entity;
+        },
+      );
+
+      serviceRequestRepository.save.mockResolvedValue(updatedServiceRequest);
+
+      const result = await service.update(1, updateDto);
+
+      expect(serviceRequestRepository.merge).toHaveBeenCalledWith(
+        existingServiceRequest,
+        {
+          number: undefined,
+          date: undefined,
+          requestType: undefined,
+          description: 'Descripción actualizada',
+          status,
+        },
+      );
+
+      expect(customerRepository.findOneBy).not.toHaveBeenCalled();
+      expect(customerRepository.save).not.toHaveBeenCalled();
+
+      expect(serviceRequestRepository.save).toHaveBeenCalledWith(
+        existingServiceRequest,
+      );
+
+      expect(result).toEqual(updatedServiceRequest);
     });
   });
 });
