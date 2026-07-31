@@ -367,5 +367,45 @@ describe('ServiceRequestsService', () => {
 
       expect(result).toEqual(updatedServiceRequest);
     });
+
+    it('should throw ConflictException when updating to an existing number', async () => {
+      const customer = {
+        id: 1,
+        name: 'Cliente de prueba',
+        email: 'cliente@ejemplo.cl',
+        phone: '912345678',
+      } as Customer;
+
+      const existingServiceRequest = {
+        id: 1,
+        number: 'REQ-001',
+        description: 'Descripción actual',
+        customer,
+      } as ServiceRequest;
+
+      const updateDto: UpdateServiceRequestDto = {
+        number: ' req-002 ',
+      };
+
+      serviceRequestRepository.findOne.mockResolvedValue(
+        existingServiceRequest,
+      );
+
+      serviceRequestRepository.exists.mockResolvedValue(true);
+
+      await expect(service.update(1, updateDto)).rejects.toThrow(
+        ConflictException,
+      );
+
+      expect(serviceRequestRepository.exists).toHaveBeenCalledWith({
+        where: {
+          number: 'REQ-002',
+        },
+      });
+
+      expect(serviceRequestRepository.merge).not.toHaveBeenCalled();
+      expect(serviceRequestRepository.save).not.toHaveBeenCalled();
+      expect(customerRepository.findOneBy).not.toHaveBeenCalled();
+    });
   });
 });
