@@ -17,6 +17,7 @@ describe('ServiceRequestsService', () => {
     exists: jest.Mock;
     create: jest.Mock;
     save: jest.Mock;
+    delete: jest.Mock;
   };
 
   let customerRepository: {
@@ -32,6 +33,7 @@ describe('ServiceRequestsService', () => {
       exists: jest.fn(),
       create: jest.fn(),
       save: jest.fn(),
+      delete: jest.fn(),
     };
 
     customerRepository = {
@@ -270,6 +272,30 @@ describe('ServiceRequestsService', () => {
       });
 
       expect(result).toEqual(savedServiceRequest);
+    });
+  });
+
+  describe('remove', () => {
+    it('should delete a service request', async () => {
+      serviceRequestRepository.delete.mockResolvedValue({
+        affected: 1,
+      });
+
+      await expect(service.remove(1)).resolves.toBeUndefined();
+
+      expect(serviceRequestRepository.delete).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw NotFoundException when no request was deleted', async () => {
+      serviceRequestRepository.delete.mockResolvedValue({
+        affected: 0,
+      });
+
+      await expect(service.remove(999)).rejects.toThrow(
+        new NotFoundException('Service request with ID 999 was not found'),
+      );
+
+      expect(serviceRequestRepository.delete).toHaveBeenCalledWith(999);
     });
   });
 });
