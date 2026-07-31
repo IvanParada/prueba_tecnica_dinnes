@@ -407,5 +407,74 @@ describe('ServiceRequestsService', () => {
       expect(serviceRequestRepository.save).not.toHaveBeenCalled();
       expect(customerRepository.findOneBy).not.toHaveBeenCalled();
     });
+
+    it('should update the current customer when the email remains the same', async () => {
+      const customer = {
+        id: 1,
+        name: 'Nombre anterior',
+        email: 'cliente@ejemplo.cl',
+        phone: '900000000',
+      } as Customer;
+
+      const existingServiceRequest = {
+        id: 1,
+        number: 'REQ-001',
+        description: 'Descripción actual',
+        customer,
+      } as ServiceRequest;
+
+      const updateDto: UpdateServiceRequestDto = {
+        customerName: ' Cliente actualizado ',
+        customerEmail: 'CLIENTE@EJEMPLO.CL ',
+        customerPhone: ' 912345678 ',
+      };
+
+      serviceRequestRepository.findOne.mockResolvedValue(
+        existingServiceRequest,
+      );
+
+      customerRepository.save.mockImplementation((customerToSave: Customer) =>
+        Promise.resolve(customerToSave),
+      );
+
+      serviceRequestRepository.merge.mockImplementation(
+        (entity: ServiceRequest, data: Partial<ServiceRequest>) => {
+          Object.assign(entity, data);
+          return entity;
+        },
+      );
+
+      serviceRequestRepository.save.mockImplementation(
+        (requestToSave: ServiceRequest) => Promise.resolve(requestToSave),
+      );
+
+      const result = await service.update(1, updateDto);
+
+      expect(customerRepository.findOneBy).not.toHaveBeenCalled();
+      expect(customerRepository.create).not.toHaveBeenCalled();
+      expect(customerRepository.merge).not.toHaveBeenCalled();
+
+      expect(customerRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 1,
+          name: 'Cliente actualizado',
+          email: 'cliente@ejemplo.cl',
+          phone: '912345678',
+        }),
+      );
+
+      expect(serviceRequestRepository.save).toHaveBeenCalledWith(
+        existingServiceRequest,
+      );
+
+      expect(result.customer).toEqual(
+        expect.objectContaining({
+          id: 1,
+          name: 'Cliente actualizado',
+          email: 'cliente@ejemplo.cl',
+          phone: '912345678',
+        }),
+      );
+    });
   });
 });
