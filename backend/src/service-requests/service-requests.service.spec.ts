@@ -1,21 +1,44 @@
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { Customer } from '../customers/entities/customers.entity';
 import { ServiceRequest } from './entities/service-request.entity';
 import { ServiceRequestsService } from './service-requests.service';
+import { CreateServiceRequestDto } from './dto/create-service-request.dto';
+import { RequestStatus } from './enums/request-status.enum';
+import { RequestType } from './enums/request-type.enum';
 
 describe('ServiceRequestsService', () => {
   let service: ServiceRequestsService;
 
   let serviceRequestRepository: {
     findOne: jest.Mock;
+    exists: jest.Mock;
+    create: jest.Mock;
+    save: jest.Mock;
+  };
+
+  let customerRepository: {
+    findOneBy: jest.Mock;
+    create: jest.Mock;
+    merge: jest.Mock;
+    save: jest.Mock;
   };
 
   beforeEach(async () => {
     serviceRequestRepository = {
       findOne: jest.fn(),
+      exists: jest.fn(),
+      create: jest.fn(),
+      save: jest.fn(),
+    };
+
+    customerRepository = {
+      findOneBy: jest.fn(),
+      create: jest.fn(),
+      merge: jest.fn(),
+      save: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -27,7 +50,7 @@ describe('ServiceRequestsService', () => {
         },
         {
           provide: getRepositoryToken(Customer),
-          useValue: {},
+          useValue: customerRepository,
         },
       ],
     }).compile();
@@ -83,6 +106,103 @@ describe('ServiceRequestsService', () => {
           customer: true,
         },
       });
+    });
+  });
+
+  describe('createServiceRequest', () => {
+    const requestType = Object.values(RequestType)[0];
+    const requestStatus = Object.values(RequestStatus)[0];
+
+    const createDto: CreateServiceRequestDto = {
+      number: ' req-002 ',
+      date: '2026-07-31',
+      customerName: ' Cliente de prueba ',
+      customerEmail: 'CLIENTE@EJEMPLO.CL ',
+      customerPhone: ' 912345678 ',
+      requestType,
+      description: ' Solicitud creada desde una prueba ',
+      status: requestStatus,
+    };
+
+    it('should create and save a service request', async () => {
+      const customer = {
+        id: 1,
+        name: 'Cliente de prueba',
+        email: 'cliente@ejemplo.cl',
+        phone: '912345678',
+      } as Customer;
+
+      const unsavedServiceRequest = {
+        number: 'REQ-002',
+        date: createDto.date,
+        requestType,
+        description: 'Solicitud creada desde una prueba',
+        status: requestStatus,
+        customer,
+      } as ServiceRequest;
+
+      const savedServiceRequest = {
+        ...unsavedServiceRequest,
+        id: 2,
+      };
+
+      serviceRequestRepository.exists.mockResolvedValue(false);
+      customerRepository.findOneBy.mockResolvedValue(null);
+      customerRepository.create.mockReturnValue(customer);
+      customerRepository.save.mockResolvedValue(customer);
+      serviceRequestRepository.create.mockReturnValue(unsavedServiceRequest);
+      serviceRequestRepository.save.mockResolvedValue(savedServiceRequest);
+
+      const result = await service.createServiceRequest(createDto);
+
+      expect(serviceRequestRepository.exists).toHaveBeenCalledWith({
+        where: {
+          number: 'REQ-002',
+        },
+      });
+
+      expect(customerRepository.findOneBy).toHaveBeenCalledWith({
+        email: 'cliente@ejemplo.cl',
+      });
+
+      expect(customerRepository.create).toHaveBeenCalledWith({
+        name: 'Cliente de prueba',
+        email: 'cliente@ejemplo.cl',
+        phone: '912345678',
+      });
+
+      expect(serviceRequestRepository.create).toHaveBeenCalledWith({
+        number: 'REQ-002',
+        date: createDto.date,
+        requestType,
+        description: 'Solicitud creada desde una prueba',
+        status: requestStatus,
+        customer,
+      });
+
+      expect(serviceRequestRepository.save).toHaveBeenCalledWith(
+        unsavedServiceRequest,
+      );
+
+      expect(result).toEqual(savedServiceRequest);
+    });
+
+    it('should throw ConflictException when the number already exists', async () => {
+      serviceRequestRepository.exists.mockResolvedValue(true);
+
+      await expect(service.createServiceRequest(createDto)).rejects.toThrow(
+        ConflictException,
+      );
+
+      expect(serviceRequestRepository.exists).toHaveBeenCalledWith({
+        where: {
+          number: 'REQ-002',
+        },
+      });
+
+      expect(customerRepository.findOneBy).not.toHaveBeenCalled();
+      expect(serviceRequestRepository.create).not.toHaveBeenCalled();
+      expect(serviceRequestRepository.save).not.toHaveBeenCalled();
     });
   });
 });
