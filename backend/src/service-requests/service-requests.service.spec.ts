@@ -204,5 +204,72 @@ describe('ServiceRequestsService', () => {
       expect(serviceRequestRepository.create).not.toHaveBeenCalled();
       expect(serviceRequestRepository.save).not.toHaveBeenCalled();
     });
+
+    it('should reuse and update an existing customer', async () => {
+      const existingCustomer = {
+        id: 10,
+        name: 'Nombre anterior',
+        email: 'cliente@ejemplo.cl',
+        phone: '900000000',
+      } as Customer;
+
+      const updatedCustomer = {
+        ...existingCustomer,
+        name: 'Cliente de prueba',
+        phone: '912345678',
+      };
+
+      const unsavedServiceRequest = {
+        number: 'REQ-002',
+        date: createDto.date,
+        requestType,
+        description: 'Solicitud creada desde una prueba',
+        status: requestStatus,
+        customer: updatedCustomer,
+      } as ServiceRequest;
+
+      const savedServiceRequest = {
+        ...unsavedServiceRequest,
+        id: 3,
+      };
+
+      serviceRequestRepository.exists.mockResolvedValue(false);
+
+      customerRepository.findOneBy.mockResolvedValue(existingCustomer);
+
+      customerRepository.merge.mockReturnValue(updatedCustomer);
+      customerRepository.save.mockResolvedValue(updatedCustomer);
+
+      serviceRequestRepository.create.mockReturnValue(unsavedServiceRequest);
+
+      serviceRequestRepository.save.mockResolvedValue(savedServiceRequest);
+
+      const result = await service.createServiceRequest(createDto);
+
+      expect(customerRepository.findOneBy).toHaveBeenCalledWith({
+        email: 'cliente@ejemplo.cl',
+      });
+
+      expect(customerRepository.merge).toHaveBeenCalledWith(existingCustomer, {
+        name: 'Cliente de prueba',
+        email: 'cliente@ejemplo.cl',
+        phone: '912345678',
+      });
+
+      expect(customerRepository.create).not.toHaveBeenCalled();
+
+      expect(customerRepository.save).toHaveBeenCalledWith(updatedCustomer);
+
+      expect(serviceRequestRepository.create).toHaveBeenCalledWith({
+        number: 'REQ-002',
+        date: createDto.date,
+        requestType,
+        description: 'Solicitud creada desde una prueba',
+        status: requestStatus,
+        customer: updatedCustomer,
+      });
+
+      expect(result).toEqual(savedServiceRequest);
+    });
   });
 });
