@@ -7,6 +7,8 @@ import { CustomersModule } from './customers/customers.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ServiceRequestsModule } from './service-requests/service-requests.module';
 
+import { HealthController } from './health.controller';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -71,7 +73,7 @@ import { ServiceRequestsModule } from './service-requests/service-requests.modul
     ServiceRequestsModule,
     DashboardModule,
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [],
 })
 export class AppModule {}
