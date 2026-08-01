@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: '/api',
+  apiUrl: 'https://prueba-tecnica-dinnes-api.onrender.com/api',
 };
