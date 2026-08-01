@@ -119,7 +119,7 @@ Los estados disponibles son:
 
 - GitHub Actions.
 - Render.
-- PostgreSQL administrado en Render.
+- PostgreSQL administrado en Neon.
 - CI/CD.
 - Health checks.
 - Variables de entorno.
@@ -378,7 +378,7 @@ En producción se utiliza principalmente:
 DATABASE_URL=
 DB_SYNCHRONIZE=false
 DB_RUN_MIGRATIONS=true
-DB_SSL=false
+DB_SSL=true
 
 AUTH_EMAIL=
 AUTH_PASSWORD=
@@ -386,6 +386,10 @@ JWT_SECRET=
 
 FRONTEND_URL=
 ```
+
+La base de datos de producción está alojada en Neon y la cadena de conexión se proporciona mediante `DATABASE_URL`.
+
+Las credenciales, secretos y cadenas de conexión se configuran directamente como variables de entorno y no se almacenan en el repositorio.
 
 ### Descripción
 
@@ -400,7 +404,7 @@ FRONTEND_URL=
 | `DB_PASSWORD` | Contraseña PostgreSQL |
 | `DB_SYNCHRONIZE` | Controla la sincronización automática de TypeORM |
 | `DB_RUN_MIGRATIONS` | Ejecuta migraciones pendientes al iniciar |
-| `DB_SSL` | Habilita SSL para PostgreSQL cuando sea necesario |
+| `DB_SSL` | Habilita SSL para la conexión PostgreSQL |
 | `AUTH_EMAIL` | Correo autorizado |
 | `AUTH_PASSWORD` | Contraseña autorizada |
 | `JWT_SECRET` | Clave utilizada para firmar JWT |
@@ -670,26 +674,35 @@ La rama `main` está protegida y requiere que los checks correspondientes finali
 
 # Despliegue
 
-La aplicación está desplegada en Render.
+La aplicación está desplegada utilizando Render y Neon.
 
-La infraestructura está separada en tres componentes:
+La infraestructura de producción se distribuye de la siguiente forma:
 
 ```text
+GitHub
+   │
+   ▼
+GitHub Actions
+   │
+   │ CI
+   ▼
 Render
-│
 ├── Static Site
 │   └── Angular
 │
-├── Web Service
-│   └── NestJS
-│
-└── PostgreSQL
-    └── Base de datos administrada
+└── Web Service
+    └── NestJS
+         │
+         │ DATABASE_URL + SSL
+         ▼
+       Neon
+         │
+         └── PostgreSQL
 ```
 
 ## Frontend
 
-Angular se compila y publica como Static Site.
+Angular se compila y publica como Static Site en Render.
 
 ```text
 https://prueba-tecnica-dinnes-web.onrender.com
@@ -697,7 +710,7 @@ https://prueba-tecnica-dinnes-web.onrender.com
 
 ## Backend
 
-NestJS se ejecuta como Web Service.
+NestJS se ejecuta como Web Service en Render.
 
 ```text
 https://prueba-tecnica-dinnes-api.onrender.com
@@ -713,19 +726,33 @@ como interfaz de red.
 
 ## PostgreSQL
 
-El backend se conecta a PostgreSQL mediante:
+La base de datos de producción está alojada en Neon.
+
+El backend desplegado en Render se conecta a PostgreSQL mediante:
 
 ```text
 DATABASE_URL
 ```
 
-La URL se administra mediante variables de entorno y no se almacena en el repositorio.
+La cadena de conexión se administra mediante variables de entorno y no se almacena en el repositorio.
+
+En producción se utiliza:
+
+```env
+DB_SSL=true
+DB_SYNCHRONIZE=false
+DB_RUN_MIGRATIONS=true
+```
+
+Para desarrollo local se utiliza PostgreSQL mediante Docker Compose y las variables individuales de conexión definidas en `.env`.
 
 ---
 
 # Migraciones
 
-En producción:
+En producción, el esquema PostgreSQL se administra mediante migraciones de TypeORM.
+
+La configuración utilizada es:
 
 ```env
 DB_SYNCHRONIZE=false
@@ -738,24 +765,44 @@ Esto evita depender de:
 synchronize: true
 ```
 
-para modificar automáticamente el esquema.
+para modificar automáticamente el esquema de producción.
 
-El esquema se administra mediante migraciones TypeORM almacenadas en:
+Las migraciones se almacenan en:
 
 ```text
 backend/src/database/migrations
 ```
 
+Cuando el backend inicia, TypeORM comprueba si existen migraciones pendientes y las ejecuta automáticamente.
+
 La migración inicial:
 
-- Crea los enums.
-- Crea `customers`.
-- Crea `service_requests`.
-- Configura la relación entre ambas tablas.
-- Crea índices.
-- Inserta datos iniciales.
+- Crea los tipos enumerados.
+- Crea la tabla `customers`.
+- Crea la tabla `service_requests`.
+- Configura la relación entre clientes y solicitudes.
+- Crea los índices necesarios.
+- Inserta los clientes iniciales.
+- Inserta las solicitudes de ejemplo.
 
-TypeORM registra las migraciones aplicadas en su propia tabla de control.
+TypeORM registra las migraciones aplicadas en su propia tabla de control, evitando ejecutar nuevamente una migración que ya fue aplicada.
+
+El flujo de inicialización en producción es:
+
+```text
+Render
+  │
+  │ inicia NestJS
+  ▼
+TypeORM
+  │
+  │ verifica migraciones pendientes
+  ▼
+Neon PostgreSQL
+  │
+  ├── aplica nuevas migraciones
+  └── continúa el inicio de la aplicación
+```
 
 ---
 
@@ -929,9 +976,9 @@ Los índices se encuentran orientados a:
 - Relaciones.
 - Consultas frecuentes.
 
-En desarrollo se puede utilizar Docker Compose.
+En desarrollo se utiliza PostgreSQL mediante Docker Compose.
 
-En producción se utiliza PostgreSQL administrado en Render.
+En producción se utiliza PostgreSQL administrado en Neon. El backend desplegado en Render se conecta mediante una cadena `DATABASE_URL` protegida como variable de entorno y utilizando SSL.
 
 ---
 
@@ -985,9 +1032,9 @@ Actualmente el proyecto dispone de:
 - [x] Migraciones TypeORM.
 - [x] GitHub Actions.
 - [x] Integración continua.
-- [x] Despliegue de frontend.
-- [x] Despliegue de backend.
-- [x] PostgreSQL administrado.
+- [x] Despliegue de frontend en Render.
+- [x] Despliegue de backend en Render.
+- [x] PostgreSQL administrado en Neon.
 - [x] Health check.
 - [x] Despliegue continuo.
 
