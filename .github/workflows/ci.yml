@@ -31,7 +31,21 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --include=optional
+
+      - name: Install Rollup native binary for Linux
+        shell: bash
+        run: |
+          ROLLUP_VERSION="$(node -p "require('./node_modules/rollup/package.json').version")"
+          echo "Installing Rollup Linux binary version $ROLLUP_VERSION"
+          npm install \
+            --no-save \
+            --package-lock=false \
+            "@rollup/rollup-linux-x64-gnu@$ROLLUP_VERSION"
+          npm ls @rollup/rollup-linux-x64-gnu
+
+      - name: Run backend lint
+        run: npm run lint --workspace=backend
 
       - name: Run backend lint
         run: npm run lint --workspace=backend
