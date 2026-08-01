@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from './auth/auth.module';
 import { CustomersModule } from './customers/customers.module';
-import { ServiceRequestsModule } from './service-requests/service-requests.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ServiceRequestsModule } from './service-requests/service-requests.module';
+
+import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -13,26 +15,65 @@ import { DashboardModule } from './dashboard/dashboard.module';
       isGlobal: true,
     }),
 
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
-      database: process.env.DB_NAME,
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      autoLoadEntities: true,
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+
+      useFactory: (configService: ConfigService) => {
+        const databaseUrl = configService.get<string>('DATABASE_URL');
+
+        const synchronize =
+          configService.get<string>('DB_SYNCHRONIZE', 'false') === 'true';
+
+        const useSsl = configService.get<string>('DB_SSL', 'false') === 'true';
+
+        const runMigrations =
+          configService.get<string>('DB_RUN_MIGRATIONS', 'false') === 'true';
+
+        return {
+          type: 'postgres' as const,
+
+          ...(databaseUrl
+            ? {
+                url: databaseUrl,
+              }
+            : {
+                host: configService.getOrThrow<string>('DB_HOST'),
+
+                port: Number(configService.get<string>('DB_PORT', '5432')),
+
+                database: configService.getOrThrow<string>('DB_NAME'),
+
+                username: configService.getOrThrow<string>('DB_USERNAME'),
+
+                password: configService.getOrThrow<string>('DB_PASSWORD'),
+              }),
+
+          autoLoadEntities: true,
+
+          migrations: [`${__dirname}/database/migrations/*{.js,.ts}`],
+
+          migrationsRun: runMigrations,
+
+          migrationsTableName: 'migrations',
+
+          synchronize,
+
+          ssl: useSsl
+            ? {
+                rejectUnauthorized: false,
+              }
+            : false,
+        };
+      },
     }),
 
     AuthModule,
-
     CustomersModule,
-
     ServiceRequestsModule,
-
     DashboardModule,
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [],
 })
 export class AppModule {}
