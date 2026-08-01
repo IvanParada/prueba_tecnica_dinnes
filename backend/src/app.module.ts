@@ -25,6 +25,9 @@ import { ServiceRequestsModule } from './service-requests/service-requests.modul
 
         const useSsl = configService.get<string>('DB_SSL', 'false') === 'true';
 
+        const runMigrations =
+          configService.get<string>('DB_RUN_MIGRATIONS', 'false') === 'true';
+
         return {
           type: 'postgres' as const,
 
@@ -45,6 +48,12 @@ import { ServiceRequestsModule } from './service-requests/service-requests.modul
               }),
 
           autoLoadEntities: true,
+
+          migrations: [`${__dirname}/database/migrations/*{.js,.ts}`],
+
+          migrationsRun: runMigrations,
+
+          migrationsTableName: 'migrations',
 
           synchronize,
 
