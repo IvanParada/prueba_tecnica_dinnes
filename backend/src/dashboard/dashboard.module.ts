@@ -6,16 +6,8 @@ import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            ServiceRequest,
-        ]),
-    ],
-    controllers: [
-        DashboardController,
-    ],
-    providers: [
-        DashboardService,
-    ],
+  imports: [TypeOrmModule.forFeature([ServiceRequest])],
+  controllers: [DashboardController],
+  providers: [DashboardService],
 })
 export class DashboardModule {}

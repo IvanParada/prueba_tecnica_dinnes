@@ -18,27 +18,16 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('API de solicitudes de atención')
-    .setDescription(
-      'API REST para administrar solicitudes de clientes.',
-    )
+    .setDescription('API REST para administrar solicitudes de clientes.')
     .setVersion('1.0')
     .build();
 
-  const swaggerDocument =
-    SwaggerModule.createDocument(
-      app,
-      swaggerConfig,
-    );
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
 
-  SwaggerModule.setup(
-    'docs',
-    app,
-    swaggerDocument,
-    {
-      useGlobalPrefix: true,
-    },
-  );
-  
+  SwaggerModule.setup('docs', app, swaggerDocument, {
+    useGlobalPrefix: true,
+  });
+
   app.enableCors({
     origin: 'http://localhost:4200',
   });

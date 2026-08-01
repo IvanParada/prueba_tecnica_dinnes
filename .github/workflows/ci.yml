@@ -1,0 +1,52 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+      - feature/testing-ci-cd
+
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    name: Test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      # Solución temporal al problema de npm con dependencias
+      # opcionales específicas de Windows/Linux.
+      - name: Install dependencies
+        shell: bash
+        run: |
+          rm -f package-lock.json backend/package-lock.json frontend/package-lock.json
+          rm -rf node_modules backend/node_modules frontend/node_modules
+          npm install --include=optional
+
+      - name: Verify Rollup Linux binary
+        run: npm ls @rollup/rollup-linux-x64-gnu || true
+
+      - name: Run backend lint
+        run: npm run lint --workspace=backend
+
+      - name: Run backend unit tests
+        run: npm run test:ci --workspace=backend
+
+      - name: Build backend and frontend
+        run: npm run build:all

@@ -67,8 +67,7 @@ export class CreateServiceRequestDto {
   requestType: RequestType;
 
   @ApiProperty({
-    example:
-      'El cliente presenta problemas para ingresar al sistema.',
+    example: 'El cliente presenta problemas para ingresar al sistema.',
   })
   @IsString()
   @IsNotEmpty()
