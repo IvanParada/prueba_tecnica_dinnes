@@ -1,6 +1,8 @@
-# Prueba Técnica DINNES
+# Service Requests Platform
 
 [![Continuous Integration](https://github.com/IvanParada/prueba_tecnica_dinnes/actions/workflows/ci.yml/badge.svg)](https://github.com/IvanParada/prueba_tecnica_dinnes/actions/workflows/ci.yml)
+
+Proyecto originado a partir de un ejercicio técnico Full Stack y posteriormente extendido con testing automatizado, CI/CD, migraciones y despliegue en producción.
 
 Sistema web Full Stack para registrar y administrar solicitudes de atención de clientes.
 
